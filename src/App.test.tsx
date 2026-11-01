@@ -1,0 +1,111 @@
+import { describe, expect, it } from "vitest";
+import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import App from "./App";
+import { STORAGE_KEY } from "./storage";
+
+const stored = () => JSON.parse(localStorage.getItem(STORAGE_KEY)!);
+const total = () => screen.getByTestId("total").textContent;
+
+describe("Today", () => {
+  it("adds reps with the preset buttons and the custom field, and saves them", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    expect(total()).toBe("0");
+    expect(screen.getByText("100 to go")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Add 25 reps" }));
+    await user.type(screen.getByLabelText("Number of reps"), "17");
+    await user.click(screen.getByRole("button", { name: "Add" }));
+
+    expect(total()).toBe("42");
+    expect(screen.getByText("58 to go")).toBeInTheDocument();
+    expect(screen.getByText("2 sets")).toBeInTheDocument();
+    const days = Object.values(stored().days) as { sets: { reps: number }[] }[];
+    expect(days[0].sets.map((s) => s.reps)).toEqual([25, 17]);
+  });
+
+  it("shows when the target is hit", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.type(screen.getByLabelText("Number of reps"), "110{Enter}");
+    expect(screen.getByText("Target hit, 10 extra")).toBeInTheDocument();
+  });
+
+  it("deletes a set and undoes the delete", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole("button", { name: "Add 10 reps" }));
+    await user.click(screen.getByRole("button", { name: /Delete set of 10/ }));
+    expect(total()).toBe("0");
+    await user.click(screen.getByRole("button", { name: "Undo" }));
+    expect(total()).toBe("10");
+  });
+
+  it("hides the install card once dismissed", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole("button", { name: "Dismiss" }));
+    expect(screen.queryByText(/Add Dunnit to your home screen/)).not.toBeInTheDocument();
+    expect(stored().settings.installCardDismissed).toBe(true);
+  });
+});
+
+describe("Settings", () => {
+  it("changes today's target right away", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole("tab", { name: "Settings" }));
+    await user.click(screen.getByRole("button", { name: "Increase target by 5" }));
+    expect(screen.getByText("Saved. Today's target is now 105.")).toBeInTheDocument();
+    await user.click(screen.getByRole("tab", { name: "Today" }));
+    expect(screen.getByText("of 105 pushups")).toBeInTheDocument();
+  });
+
+  it("rejects an invalid import file with a clear message", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole("tab", { name: "Settings" }));
+    const file = new File(['{"foo":1}'], "notes.json", { type: "application/json" });
+    await user.upload(screen.getByLabelText("Import"), file);
+    expect(await screen.findByRole("alert")).toHaveTextContent("Couldn't import notes.json. This file is not a Dunnit backup.");
+  });
+
+  it("imports a backup after confirmation", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole("tab", { name: "Settings" }));
+    const backup = {
+      version: 1,
+      settings: { target: 60, timeZone: "UTC", installCardDismissed: true },
+      days: { "2026-10-01": { target: 60, sets: [{ at: "2026-10-01T10:00:00.000Z", reps: 30 }] } },
+    };
+    await user.upload(screen.getByLabelText("Import"), new File([JSON.stringify(backup)], "backup.json"));
+    await user.click(await screen.findByRole("button", { name: "Replace my data" }));
+    expect(stored().settings.target).toBe(60);
+    expect(stored().days["2026-10-01"].sets[0].reps).toBe(30);
+  });
+
+  it("resets all data after confirmation", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole("button", { name: "Add 25 reps" }));
+    await user.click(screen.getByRole("tab", { name: "Settings" }));
+    await user.click(screen.getByRole("button", { name: "Reset" }));
+    await user.click(screen.getByRole("button", { name: "Delete everything" }));
+    await user.click(screen.getByRole("tab", { name: "Today" }));
+    expect(total()).toBe("0");
+  });
+});
+
+describe("History", () => {
+  it("shows today's reps in the table", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole("button", { name: "Add 25 reps" }));
+    await user.click(screen.getByRole("tab", { name: "History" }));
+    const row = screen.getByRole("cell", { name: "Today" }).closest("tr")!;
+    expect(within(row).getByText("25")).toBeInTheDocument();
+    expect(within(row).getByText("In progress")).toBeInTheDocument();
+  });
+});
