@@ -1,13 +1,18 @@
 export type RepSet = { at: string; reps: number };
 export type Day = { target: number; sets: RepSet[] };
-export type Settings = { target: number; timeZone: string; installCardDismissed: boolean };
+export type Settings = { target: number; timeZone: string; installCardDismissed: boolean; presets: number[] };
 export type Data = { version: 1; settings: Settings; days: Record<string, Day> };
 export type HistoryRow = { date: string; reps: number; target: number; isToday: boolean };
 
 export const DEFAULT_TARGET = 100;
+export const DEFAULT_PRESETS = [5, 10, 25];
 
 export function defaultData(timeZone: string): Data {
-  return { version: 1, settings: { target: DEFAULT_TARGET, timeZone, installCardDismissed: false }, days: {} };
+  return {
+    version: 1,
+    settings: { target: DEFAULT_TARGET, timeZone, installCardDismissed: false, presets: DEFAULT_PRESETS },
+    days: {},
+  };
 }
 
 /** The calendar date ("YYYY-MM-DD") of `date` in `timeZone`. */
@@ -70,6 +75,11 @@ export function setTarget(data: Data, target: number, now: Date): Data {
 
 export function setTimeZone(data: Data, timeZone: string): Data {
   return { ...data, settings: { ...data.settings, timeZone } };
+}
+
+/** The quick-add buttons on the Today screen, stored in ascending order. */
+export function setPresets(data: Data, presets: number[]): Data {
+  return { ...data, settings: { ...data.settings, presets: [...presets].sort((a, b) => a - b) } };
 }
 
 export function totalReps(day: Day | undefined): number {

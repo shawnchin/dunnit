@@ -127,6 +127,9 @@ button, label[for] { cursor: pointer; }
 .stepper input { width: 90px; border: 0; background: transparent; text-align: center; font-family: var(--f-display); font-weight: 800; font-size: 30px; font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
 .stepper input::-webkit-inner-spin-button, .stepper input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .stepper input:focus { outline: none; }
+.preset-inputs { display: flex; gap: 10px; }
+.preset-inputs input { flex: 1; min-width: 0; border: 1.5px solid var(--line); background: var(--surface-2); border-radius: 14px; padding: 12px 14px; font-size: 18px; text-align: center; font-variant-numeric: tabular-nums; }
+.preset-inputs input:focus { border-color: var(--accent); outline: none; }
 select { border: 1.5px solid var(--line); background: var(--surface-2); border-radius: 14px; padding: 12px; font-size: 15px; width: 100%; }
 .saved { color: var(--good); font-size: 13px; font-weight: 600; min-height: 1.2em; }
 .error { color: var(--danger); font-size: 13px; margin: 0; }

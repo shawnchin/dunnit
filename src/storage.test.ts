@@ -27,6 +27,13 @@ describe("export and import", () => {
     expect(parseImport(serialize(data))).toEqual({ ok: true, data });
   });
 
+  it("fills in the default quick-add buttons for a backup made before they were configurable", () => {
+    const { settings, ...rest } = defaultData("UTC");
+    const { presets: _presets, ...oldSettings } = settings;
+    const result = parseImport(JSON.stringify({ ...rest, settings: oldSettings }));
+    expect(result.ok && result.data.settings.presets).toEqual([5, 10, 25]);
+  });
+
   it("names the file after today's date", () => {
     expect(exportFilename(defaultData("Asia/Tokyo"), new Date("2026-11-01T20:00:00Z"))).toBe(
       "dunnit-backup-2026-11-02.json",
@@ -45,6 +52,16 @@ describe("export and import", () => {
       "an unknown timezone",
       JSON.stringify({ ...defaultData("UTC"), settings: { target: 100, timeZone: "Mars/Base", installCardDismissed: false } }),
       'The timezone "Mars/Base" is not recognised.',
+    ],
+    [
+      "duplicate quick-add buttons",
+      JSON.stringify({ ...defaultData("UTC"), settings: { ...defaultData("UTC").settings, presets: [10, 10, 25] } }),
+      "The quick-add buttons must be three different whole numbers from 1 to 100.",
+    ],
+    [
+      "a quick-add button over 100",
+      JSON.stringify({ ...defaultData("UTC"), settings: { ...defaultData("UTC").settings, presets: [10, 20, 150] } }),
+      "The quick-add buttons must be three different whole numbers from 1 to 100.",
     ],
     [
       "a bad date",

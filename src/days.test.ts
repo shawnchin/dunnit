@@ -8,6 +8,7 @@ import {
   historyRange,
   insertSet,
   removeSet,
+  setPresets,
   setTarget,
   setTimeZone,
   todayKey,
@@ -164,5 +165,11 @@ describe("historyRange", () => {
     expect(historyRange(defaultData("UTC"), at("2026-11-01T12:00:00Z"), 7)).toEqual([
       { date: "2026-11-01", reps: 0, target: 100, isToday: true },
     ]);
+  });
+});
+
+describe("setPresets", () => {
+  it("stores the quick-add buttons in ascending order", () => {
+    expect(setPresets(defaultData("UTC"), [25, 10, 20]).settings.presets).toEqual([10, 20, 25]);
   });
 });

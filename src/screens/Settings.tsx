@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import { setTarget, setTimeZone, type Data } from "../days";
+import { setPresets, setTarget, setTimeZone, type Data } from "../days";
 import { exportFilename, parseImport, serialize } from "../storage";
 import { browserTimeZone, type DataApi } from "../useData";
 
 const MIN = 1, MAX = 2000;
+const PRESET_MIN = 1, PRESET_MAX = 100;
 
 function useFlash(): [string, (msg: string) => void] {
   const [msg, setMsg] = useState("");
@@ -36,6 +37,9 @@ export default function Settings({ api, install, scrollToInstall, onScrolled }: 
   const { data, update, replace, reset } = api;
   const [targetText, setTargetText] = useState(String(data.settings.target));
   const [targetMsg, flashTarget] = useFlash();
+  const [presetTexts, setPresetTexts] = useState(data.settings.presets.map(String));
+  const [presetMsg, flashPreset] = useFlash();
+  const [presetError, flashPresetError] = useFlash();
   const [tzMsg, flashTz] = useFlash();
   const [dataMsg, flashData] = useFlash();
   const [importError, setImportError] = useState("");
@@ -45,6 +49,7 @@ export default function Settings({ api, install, scrollToInstall, onScrolled }: 
   const detected = browserTimeZone();
 
   useEffect(() => setTargetText(String(data.settings.target)), [data.settings.target]);
+  useEffect(() => setPresetTexts(data.settings.presets.map(String)), [data.settings.presets]);
 
   useEffect(() => {
     if (scrollToInstall) {
@@ -64,6 +69,18 @@ export default function Settings({ api, install, scrollToInstall, onScrolled }: 
       update((d, n) => setTarget(d, v, n));
       flashTarget(`Saved. Today's target is now ${v}.`);
     }
+  };
+
+  const commitPreset = (index: number, value: number) => {
+    const presets = data.settings.presets;
+    const v = Math.max(PRESET_MIN, Math.min(PRESET_MAX, Math.round(value)));
+    if (Number.isNaN(v) || presets.includes(v)) {
+      setPresetTexts(presets.map(String));
+      if (v !== presets[index]) flashPresetError("Each button needs a different number.");
+      return;
+    }
+    update((d) => setPresets(d, presets.map((p, i) => (i === index ? v : p))));
+    flashPreset("Saved.");
   };
 
   const doExport = () => {
@@ -117,6 +134,29 @@ export default function Settings({ api, install, scrollToInstall, onScrolled }: 
         </div>
         <p className="hint">Applies to today right away and to future days. Past days keep the target they had.</p>
         <div className="saved" role="status">{targetMsg}</div>
+      </div>
+
+      <div className="field">
+        <label id="presetsLabel">Quick-add buttons</label>
+        <div className="preset-inputs" role="group" aria-labelledby="presetsLabel">
+          {presetTexts.map((text, i) => (
+            <input
+              key={i}
+              type="number"
+              inputMode="numeric"
+              min={PRESET_MIN}
+              max={PRESET_MAX}
+              aria-label={`Button ${i + 1}`}
+              value={text}
+              onChange={(e) => setPresetTexts(presetTexts.map((t, j) => (j === i ? e.target.value : t)))}
+              onBlur={() => commitPreset(i, parseInt(text, 10))}
+              onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
+            />
+          ))}
+        </div>
+        <p className="hint">The three amounts offered on the Today screen. They are kept in ascending order.</p>
+        {presetError && <p className="error" role="alert">{presetError}</p>}
+        <div className="saved" role="status">{presetMsg}</div>
       </div>
 
       <div className="field">

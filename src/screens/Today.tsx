@@ -5,8 +5,6 @@ import { isInstalled } from "../useInstallPrompt";
 import type { DataApi } from "../useData";
 import Ring from "../components/Ring";
 
-const PRESETS = [5, 10, 25];
-
 export default function Today({ api, onShowInstall }: { api: DataApi; onShowInstall: () => void }) {
   const { data, now, update } = api;
   const key = todayKey(data, now);
@@ -15,6 +13,7 @@ export default function Today({ api, onShowInstall }: { api: DataApi; onShowInst
   const target = day?.target ?? data.settings.target;
   const sets = day?.sets ?? [];
   const tz = data.settings.timeZone;
+  const presets = data.settings.presets;
 
   const [custom, setCustom] = useState("");
   const [removed, setRemoved] = useState<{ key: string; set: RepSet } | null>(null);
@@ -79,7 +78,7 @@ export default function Today({ api, onShowInstall }: { api: DataApi; onShowInst
 
       <div className="entry">
         <div className="presets">
-          {PRESETS.map((n) => (
+          {presets.map((n) => (
             <button key={n} className="preset" aria-label={`Add ${n} reps`} onClick={() => add(n)}>
               +{n}
             </button>
@@ -107,7 +106,9 @@ export default function Today({ api, onShowInstall }: { api: DataApi; onShowInst
           <span>{sets.length ? `${sets.length} ${sets.length === 1 ? "set" : "sets"}` : ""}</span>
         </p>
         <ul className="log">
-          {sets.length === 0 && <li className="empty">No sets yet. Tap +5, +10 or +25 after your first set.</li>}
+          {sets.length === 0 && (
+            <li className="empty">No sets yet. Tap +{presets[0]}, +{presets[1]} or +{presets[2]} after your first set.</li>
+          )}
           {sets
             .map((s, i) => ({ s, i }))
             .reverse()

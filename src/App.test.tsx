@@ -62,6 +62,33 @@ describe("Settings", () => {
     expect(screen.getByText("of 105 pushups")).toBeInTheDocument();
   });
 
+  it("changes a quick-add button and shows it on Today in ascending order", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole("tab", { name: "Settings" }));
+    const first = screen.getByLabelText("Button 1");
+    await user.clear(first);
+    await user.type(first, "20{Enter}");
+    expect(screen.getByText("Saved.")).toBeInTheDocument();
+    expect(stored().settings.presets).toEqual([10, 20, 25]);
+    await user.click(screen.getByRole("tab", { name: "Today" }));
+    const names = screen.getAllByRole("button", { name: /^Add \d+ reps$/ }).map((b) => b.textContent);
+    expect(names).toEqual(["+10", "+20", "+25"]);
+    expect(screen.getByText("No sets yet. Tap +10, +20 or +25 after your first set.")).toBeInTheDocument();
+  });
+
+  it("rejects a duplicate quick-add button", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole("tab", { name: "Settings" }));
+    const first = screen.getByLabelText("Button 1");
+    await user.clear(first);
+    await user.type(first, "10{Enter}");
+    expect(screen.getByRole("alert")).toHaveTextContent("Each button needs a different number.");
+    expect(first).toHaveValue(5);
+    expect(stored().settings.presets).toEqual([5, 10, 25]);
+  });
+
   it("rejects an invalid import file with a clear message", async () => {
     const user = userEvent.setup();
     render(<App />);

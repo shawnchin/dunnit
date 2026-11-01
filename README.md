@@ -11,7 +11,7 @@ It runs entirely in your browser. There is no account, no server and no database
 
 ## Features
 
-- **Today:** a progress ring shows reps done against the day's target. Log a set in one tap with +5, +10 or +25, or type any amount. Each set is listed with its time and can be deleted, with undo.
+- **Today:** a progress ring shows reps done against the day's target. Log a set in one tap with +5, +10 or +25 (the three amounts are configurable in Settings), or type any amount. Each set is listed with its time and can be deleted, with undo.
 - **History:** a 7 or 30 day chart of reps per day, with each day's target drawn as a dashed line, plus a day-by-day table.
 - **Settings:** change the daily target and timezone, see how to install the app, and export, import or reset your data.
 - **Light and dark mode** follow your device setting.

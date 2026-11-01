@@ -1,4 +1,4 @@
-import { dateKey, defaultData, type Data } from "./days";
+import { DEFAULT_PRESETS, dateKey, defaultData, type Data } from "./days";
 
 export const STORAGE_KEY = "dunnit:v1";
 
@@ -43,6 +43,8 @@ export type ImportResult = { ok: true; data: Data } | { ok: false; error: string
 
 const isObject = (x: unknown): x is Record<string, unknown> => typeof x === "object" && x !== null && !Array.isArray(x);
 const isTarget = (x: unknown) => Number.isInteger(x) && (x as number) >= 1 && (x as number) <= 2000;
+const isPreset = (x: unknown) => Number.isInteger(x) && (x as number) >= 1 && (x as number) <= 100;
+const isPresets = (x: unknown) => Array.isArray(x) && x.length === 3 && x.every(isPreset) && new Set(x).size === 3;
 
 function isTimeZone(tz: string): boolean {
   try {
@@ -61,6 +63,10 @@ function validate(x: unknown): string | null {
   if (!isTarget(s.target)) return "The daily target must be a whole number from 1 to 2000.";
   if (typeof s.timeZone !== "string" || !isTimeZone(s.timeZone)) return `The timezone "${String(s.timeZone)}" is not recognised.`;
   if (typeof s.installCardDismissed !== "boolean") return "This file is not a Dunnit backup.";
+  // Backups from before quick-add buttons were configurable have no presets.
+  if (s.presets === undefined) s.presets = [...DEFAULT_PRESETS];
+  if (!isPresets(s.presets)) return "The quick-add buttons must be three different whole numbers from 1 to 100.";
+  (s.presets as number[]).sort((a, b) => a - b);
   for (const [key, day] of Object.entries(x.days)) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(key) || Number.isNaN(Date.parse(key))) return `The day "${key}" is not a valid date.`;
     if (!isObject(day) || !isTarget(day.target) || !Array.isArray(day.sets)) return `The day ${key} has a missing or invalid target.`;
