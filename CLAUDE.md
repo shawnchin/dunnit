@@ -64,8 +64,25 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
-## Status
+## Commands
 
-This repository is currently empty: no source files, build configuration, or README exist yet. There are no build, lint, or test commands to document and no architecture to describe.
+- `npm run dev`: dev server (the service worker is not active in dev)
+- `npm test`: all tests (Vitest + React Testing Library, jsdom). One file: `npx vitest run src/days.test.ts`
+- `npm run build`: type-check (`tsc -b`) then production build to `dist/`
+- `npm run preview`: serve `dist/`, needed to test the PWA (manifest, service worker, offline)
 
-Once the project has code and tooling in place, re-run `/init` to replace this file with real build/test commands and an architecture overview.
+## Architecture
+
+Dunnit is a frontend-only daily pushup tracker: React 18 + TypeScript + Vite, an installable PWA via `vite-plugin-pwa`. There is no backend. All state is one JSON object in localStorage under `dunnit:v1`.
+
+- `src/days.ts`: the data model (`Data`, `Day`, `RepSet`) and pure functions for all state changes. Every change goes through here and returns a new object.
+- `src/storage.ts`: load/save, export, and import validation (`parseImport`). Stored data is validated the same way imports are.
+- `src/useData.ts`: React hook that holds state, saves on every change, and re-checks "today" every minute and when the page becomes visible.
+- `src/screens/` (Today, History, Settings) and `src/components/` (Ring, HistoryChart). The chart is hand-written SVG, with no chart library.
+- `src/styles.css`: one stylesheet with color tokens on `:root`, overridden for dark mode by `prefers-color-scheme`.
+
+Rules that are easy to break:
+- Days are keyed `"YYYY-MM-DD"` in the configured timezone, worked out when a set is logged. A set never moves to another day.
+- `todayKey` never returns a date earlier than the newest recorded day, so switching timezone westward does not move "today" back.
+- Each day stores its own `target`. `setTarget` updates the settings and today's target only; past days keep theirs.
+- Format a day key with `formatDay` (it formats in UTC, so there is no shift). Format a set time with `formatTime` in the configured timezone.
