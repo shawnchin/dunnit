@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "./App";
+import { addDays, dateKey } from "./days";
 import { STORAGE_KEY } from "./storage";
 
 const stored = () => JSON.parse(localStorage.getItem(STORAGE_KEY)!);
@@ -134,5 +135,45 @@ describe("History", () => {
     const row = screen.getByRole("cell", { name: "Today" }).closest("tr")!;
     expect(within(row).getByText("25")).toBeInTheDocument();
     expect(within(row).getByText("In progress")).toBeInTheDocument();
+  });
+
+  /** Stores a backup whose first recorded day is `daysAgo` days before today, then opens History. */
+  async function openHistory(daysAgo: number) {
+    const first = addDays(dateKey(new Date(), "UTC"), -daysAgo);
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        settings: { target: 100, timeZone: "UTC", installCardDismissed: true },
+        days: { [first]: { target: 100, sets: [{ at: `${first}T10:00:00.000Z`, reps: 70 }] } },
+      }),
+    );
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole("tab", { name: "History" }));
+    return user;
+  }
+  const ranges = () => within(screen.getByRole("group", { name: "Range" })).getAllByRole("button").map((b) => b.textContent);
+
+  it("offers only 7 and 30 days with up to 30 days of history", async () => {
+    await openHistory(29);
+    expect(ranges()).toEqual(["7 days", "30 days"]);
+  });
+
+  it("offers 90 days with more than 30 days of history", async () => {
+    const user = await openHistory(30);
+    expect(ranges()).toEqual(["7 days", "30 days", "90 days"]);
+    await user.click(screen.getByRole("button", { name: "90 days" }));
+    expect(screen.getByText("0/31")).toBeInTheDocument();
+    expect(screen.getAllByRole("row")).toHaveLength(32); // 31 days and the header
+  });
+
+  it("offers 1 year with more than 90 days of history, and still lists every day", async () => {
+    const user = await openHistory(90);
+    expect(ranges()).toEqual(["7 days", "30 days", "90 days", "1 year"]);
+    await user.click(screen.getByRole("button", { name: "1 year" }));
+    expect(screen.getByText("0/91")).toBeInTheDocument();
+    expect(screen.getAllByRole("row")).toHaveLength(92);
+    expect(screen.getByRole("img", { name: /per week/ })).toBeInTheDocument();
   });
 });

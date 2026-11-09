@@ -88,7 +88,9 @@ button, label[for] { cursor: pointer; }
 
 /* History */
 .seg { display: inline-flex; align-self: flex-start; background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 3px; }
-.seg button { border: 0; background: transparent; padding: 6px 14px; border-radius: 9px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.seg button { border: 0; background: transparent; padding: 6px 14px; border-radius: 9px; font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+/* Four range buttons do not fit the narrowest phones at full padding. */
+@media (max-width: 359px) { .seg button { padding: 6px 9px; } }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
 .summary { display: flex; gap: 24px; flex-wrap: wrap; }
 .summary div { display: flex; flex-direction: column; }

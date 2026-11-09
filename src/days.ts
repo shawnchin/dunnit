@@ -2,7 +2,8 @@ export type RepSet = { at: string; reps: number };
 export type Day = { target: number; sets: RepSet[] };
 export type Settings = { target: number; timeZone: string; installCardDismissed: boolean; presets: number[] };
 export type Data = { version: 1; settings: Settings; days: Record<string, Day> };
-export type HistoryRow = { date: string; reps: number; target: number; isToday: boolean };
+/** `end` is set only on weekly rows: the last day of the block that starts on `date`. */
+export type HistoryRow = { date: string; reps: number; target: number; isToday: boolean; end?: string };
 
 export const DEFAULT_TARGET = 100;
 export const DEFAULT_PRESETS = [5, 10, 25];
@@ -110,4 +111,31 @@ export function historyRange(data: Data, now: Date, n: number): HistoryRow[] {
     rows.push({ date: key, reps: totalReps(day), target, isToday });
   }
   return rows;
+}
+
+/** How many calendar days the history covers, from the first recorded day to today. */
+export function historyLength(data: Data, now: Date): number {
+  const today = todayKey(data, now);
+  const first = Object.keys(data.days).sort()[0] ?? today;
+  return Math.round((Date.parse(today) - Date.parse(first)) / 86_400_000) + 1;
+}
+
+/**
+ * Groups daily rows into 7-day blocks counted back from the last row, so only the oldest block can be shorter.
+ * Each block holds the average reps and average target per day.
+ */
+export function weeklyRows(rows: HistoryRow[]): HistoryRow[] {
+  const weeks: HistoryRow[] = [];
+  for (let end = rows.length; end > 0; end -= 7) {
+    const block = rows.slice(Math.max(0, end - 7), end);
+    const avg = (pick: (r: HistoryRow) => number) => block.reduce((sum, r) => sum + pick(r), 0) / block.length;
+    weeks.unshift({
+      date: block[0].date,
+      end: block[block.length - 1].date,
+      reps: avg((r) => r.reps),
+      target: avg((r) => r.target),
+      isToday: block.some((r) => r.isToday),
+    });
+  }
+  return weeks;
 }

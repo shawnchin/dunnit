@@ -8,9 +8,13 @@ function niceStep(max: number): number {
   return max / 5 >= 25 ? 50 : 25;
 }
 
-/** Bars of reps per day with each day's target drawn as a dashed step line. `slots` fixes the bar width for the range. */
+/**
+ * Bars of reps per day with each day's target drawn as a dashed step line. `slots` fixes the bar width for the range.
+ * Weekly rows (those with an `end`) are drawn the same way, as average reps per day against the average target.
+ */
 export default function HistoryChart({ rows, slots }: { rows: HistoryRow[]; slots: number }) {
   const [hover, setHover] = useState<number | null>(null);
+  const weekly = rows[0].end !== undefined;
   const max = Math.max(...rows.map((d) => Math.max(d.reps, d.target)));
   const yMax = Math.ceil((max * 1.1) / 25) * 25;
   const step = niceStep(yMax);
@@ -18,7 +22,7 @@ export default function HistoryChart({ rows, slots }: { rows: HistoryRow[]; slot
   const band = (W - L - R) / slots;
   const offset = slots - rows.length; // align to the right when there is less history than the range
   const x0 = (i: number) => L + band * (i + offset);
-  const bw = Math.max(3, Math.min(28, band * 0.62));
+  const bw = Math.max(2, Math.min(28, band * 0.62));
 
   const ticks: number[] = [];
   for (let v = 0; v <= yMax; v += step) ticks.push(v);
@@ -34,16 +38,23 @@ export default function HistoryChart({ rows, slots }: { rows: HistoryRow[]; slot
   };
 
   const label = (d: HistoryRow, i: number) => {
-    if (d.isToday) return "Today";
+    if (d.isToday && !weekly) return "Today";
     if (slots <= 7) return formatDay(d.date, { weekday: "short" });
-    return (rows.length - 1 - i) % 7 === 0 ? formatDay(d.date, { day: "numeric", month: "short" }) : null;
+    const every = weekly ? 8 : slots > 30 ? 14 : 7; // keeps the labels from running into each other
+    return (rows.length - 1 - i) % every === 0 ? formatDay(d.date, { day: "numeric", month: "short" }) : null;
+  };
+
+  const tipTitle = (d: HistoryRow) => {
+    if (!weekly) return d.isToday ? "Today" : formatDay(d.date, { weekday: "short", day: "numeric", month: "short" });
+    const from = formatDay(d.date, { day: "numeric", month: "short" });
+    return d.end === d.date ? from : `${from} – ${formatDay(d.end!, { day: "numeric", month: "short" })}`;
   };
 
   const h = hover !== null ? rows[hover] : null;
 
   return (
     <div className="chart-box" onPointerLeave={() => setHover(null)}>
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Bar chart of daily reps with the daily target as a dashed line">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={weekly ? "Bar chart of average daily reps per week with the average target as a dashed line" : "Bar chart of daily reps with the daily target as a dashed line"}>
         {ticks.map((v) => (
           <g key={v}>
             <line className="grid" x1={L} x2={W - R} y1={y(v)} y2={y(v)} />
@@ -79,16 +90,16 @@ export default function HistoryChart({ rows, slots }: { rows: HistoryRow[]; slot
             top: `calc(${(Math.min(y(h.reps), y(h.target)) / H) * 100}% - 8px)`,
           }}
         >
-          {h.isToday ? "Today" : formatDay(h.date, { weekday: "short", day: "numeric", month: "short" })}
+          {tipTitle(h)}
           <br />
-          <b>{h.reps}</b> of {h.target}
-          {h.reps >= h.target ? " · on target" : ""}
+          {weekly && "avg "}<b>{Math.round(h.reps)}</b> of {Math.round(h.target)}
+          {!weekly && h.reps >= h.target ? " · on target" : ""}
         </div>
       )}
       <div className="legend">
-        <span><i className="lg-bar" />Reps</span>
-        <span><i className="lg-today" />Today (in progress)</span>
-        <span><i className="lg-line" />Target</span>
+        <span><i className="lg-bar" />{weekly ? "Average reps" : "Reps"}</span>
+        <span><i className="lg-today" />{weekly ? "Last 7 days (in progress)" : "Today (in progress)"}</span>
+        <span><i className="lg-line" />{weekly ? "Average target" : "Target"}</span>
       </div>
     </div>
   );

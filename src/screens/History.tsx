@@ -1,14 +1,17 @@
 import { useState } from "react";
-import { historyRange } from "../days";
+import { historyLength, historyRange, weeklyRows } from "../days";
 import { formatDay } from "../format";
 import type { DataApi } from "../useData";
 import HistoryChart from "../components/HistoryChart";
 
-const RANGES = [7, 30];
-
 export default function History({ api }: { api: DataApi }) {
   const { data, now } = api;
-  const [range, setRange] = useState(7);
+  const [selected, setSelected] = useState(7);
+  const length = historyLength(data, now);
+  // The longer ranges appear only once the shorter one can no longer show all the history.
+  const ranges = [7, 30, ...(length > 30 ? [90] : []), ...(length > 90 ? [365] : [])];
+  const range = ranges.includes(selected) ? selected : 7;
+  const weekly = range === 365; // a year of daily bars would be too thin to read
   const rows = historyRange(data, now, range);
   const past = rows.filter((r) => !r.isToday);
   const hit = rows.filter((r) => r.reps >= r.target).length;
@@ -25,9 +28,9 @@ export default function History({ api }: { api: DataApi }) {
       </header>
 
       <div className="seg" role="group" aria-label="Range">
-        {RANGES.map((r) => (
-          <button key={r} aria-pressed={range === r} onClick={() => setRange(r)}>
-            {r} days
+        {ranges.map((r) => (
+          <button key={r} aria-pressed={range === r} onClick={() => setSelected(r)}>
+            {r === 365 ? "1 year" : `${r} days`}
           </button>
         ))}
       </div>
@@ -38,7 +41,7 @@ export default function History({ api }: { api: DataApi }) {
         <div><b>{total.toLocaleString()}</b><span>total reps</span></div>
       </div>
 
-      <HistoryChart rows={rows} slots={range} />
+      <HistoryChart rows={weekly ? weeklyRows(rows) : rows} slots={weekly ? Math.ceil(range / 7) : range} />
 
       <div>
         <p className="section-label"><span>By day</span></p>

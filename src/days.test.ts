@@ -5,6 +5,7 @@ import {
   dateKey,
   defaultData,
   ensureToday,
+  historyLength,
   historyRange,
   insertSet,
   removeSet,
@@ -12,7 +13,9 @@ import {
   setTarget,
   setTimeZone,
   todayKey,
+  weeklyRows,
   type Data,
+  type HistoryRow,
 } from "./days";
 
 const at = (iso: string) => new Date(iso);
@@ -164,6 +167,41 @@ describe("historyRange", () => {
   it("shows today with the current target even before anything is logged", () => {
     expect(historyRange(defaultData("UTC"), at("2026-11-01T12:00:00Z"), 7)).toEqual([
       { date: "2026-11-01", reps: 0, target: 100, isToday: true },
+    ]);
+  });
+});
+
+describe("historyLength", () => {
+  it("counts the calendar days from the first recorded day to today, gaps included", () => {
+    const data = addSet(defaultData("UTC"), 10, at("2026-10-02T10:00:00Z"));
+    expect(historyLength(data, at("2026-10-02T12:00:00Z"))).toBe(1);
+    expect(historyLength(data, at("2026-10-31T12:00:00Z"))).toBe(30);
+    expect(historyLength(data, at("2026-11-01T12:00:00Z"))).toBe(31);
+  });
+
+  it("is 1 before anything is recorded", () => {
+    expect(historyLength(defaultData("UTC"), at("2026-11-01T12:00:00Z"))).toBe(1);
+  });
+});
+
+describe("weeklyRows", () => {
+  const daily = (n: number, reps: (i: number) => number, target: (i: number) => number): HistoryRow[] =>
+    Array.from({ length: n }, (_, i) => ({ date: addDays("2026-10-01", i), reps: reps(i), target: target(i), isToday: i === n - 1 }));
+
+  it("groups days into 7-day blocks counted back from today, averaging reps and targets", () => {
+    // 1 to 14 Oct. The target rises from 100 to 135 on 12 Oct, part-way through the second block.
+    const rows = daily(14, (i) => (i < 7 ? 70 : 140), (i) => (i < 11 ? 100 : 135));
+    expect(weeklyRows(rows)).toEqual([
+      { date: "2026-10-01", end: "2026-10-07", reps: 70, target: 100, isToday: false },
+      { date: "2026-10-08", end: "2026-10-14", reps: 140, target: 115, isToday: true },
+    ]);
+  });
+
+  it("leaves the oldest block shorter when the days do not divide by 7", () => {
+    const rows = daily(9, (i) => (i < 2 ? 30 : 60), () => 100);
+    expect(weeklyRows(rows)).toEqual([
+      { date: "2026-10-01", end: "2026-10-02", reps: 30, target: 100, isToday: false },
+      { date: "2026-10-03", end: "2026-10-09", reps: 60, target: 100, isToday: true },
     ]);
   });
 });
