@@ -4,16 +4,46 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#2547F5" />
-    <meta name="description" content="Track your daily pushups." />
+    <meta name="description" content="Dunnit is a free daily push-up tracker. Set a target, log your pushups in one tap and see your history. Works offline, no account needed." />
+    <link rel="canonical" href="https://dunnit.tumb.uk/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Dunnit" />
+    <meta property="og:title" content="Dunnit: Daily Pushup Tracker" />
+    <meta property="og:description" content="Dunnit is a free daily push-up tracker. Set a target, log your pushups in one tap and see your history. Works offline, no account needed." />
+    <meta property="og:url" content="https://dunnit.tumb.uk/" />
+    <meta property="og:image" content="https://dunnit.tumb.uk/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Dunnit, a daily pushup tracker, showing 62 of 100 pushups done today" />
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/icons/icon-192.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&family=Figtree:wght@400;600;700&family=JetBrains+Mono:wght@400&display=swap" />
-    <title>Dunnit</title>
+    <title>Dunnit: Daily Pushup Tracker</title>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Dunnit",
+        "url": "https://dunnit.tumb.uk/",
+        "description": "Dunnit is a free daily push-up tracker. Set a target, log your pushups in one tap and see your history. Works offline, no account needed.",
+        "applicationCategory": "HealthApplication",
+        "operatingSystem": "Any",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Shown until the app loads, and to crawlers that don't run JavaScript. React replaces it on mount. -->
+      <div class="splash">
+        <h1>Dunnit: daily pushup tracker</h1>
+        <p>Dunnit is a free daily push-up tracker. Set a daily target, log your pushups in one tap as you do them through the day, and see how each day measured up.</p>
+        <p>It works offline and installs on your phone's home screen. There is no account: your data stays on your device.</p>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

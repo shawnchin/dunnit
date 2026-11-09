@@ -36,6 +36,11 @@ button, label[for] { cursor: pointer; }
 .app { position: relative; height: 100%; max-width: 520px; margin: 0 auto; background: var(--surface); display: flex; flex-direction: column; }
 @media (min-width: 560px) { .app { border-left: 1px solid var(--line); border-right: 1px solid var(--line); } }
 
+/* Static text in index.html, shown until the app mounts. */
+.splash { height: 100%; max-width: 520px; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; justify-content: center; gap: 12px; text-align: center; color: var(--muted); }
+.splash h1 { margin: 0; font-family: var(--f-display); font-weight: 800; font-size: 30px; letter-spacing: .01em; text-transform: uppercase; line-height: 1; color: var(--fg); }
+.splash p { margin: 0; }
+
 .screen {
   flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 24px;
   padding-top: calc(20px + env(safe-area-inset-top, 0px)); padding-bottom: 28px;
