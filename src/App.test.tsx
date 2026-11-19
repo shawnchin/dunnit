@@ -15,15 +15,15 @@ describe("Today", () => {
     expect(total()).toBe("0");
     expect(screen.getByText("100 to go")).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Add 25 reps" }));
+    await user.click(screen.getByRole("button", { name: "Add 30 reps" }));
     await user.type(screen.getByLabelText("Number of reps"), "17");
     await user.click(screen.getByRole("button", { name: "Add" }));
 
-    expect(total()).toBe("42");
-    expect(screen.getByText("58 to go")).toBeInTheDocument();
+    expect(total()).toBe("47");
+    expect(screen.getByText("53 to go")).toBeInTheDocument();
     expect(screen.getByText("2 sets")).toBeInTheDocument();
     const days = Object.values(stored().days) as { sets: { reps: number }[] }[];
-    expect(days[0].sets.map((s) => s.reps)).toEqual([25, 17]);
+    expect(days[0].sets.map((s) => s.reps)).toEqual([30, 17]);
   });
 
   it("shows when the target is hit", async () => {
@@ -69,13 +69,13 @@ describe("Settings", () => {
     await user.click(screen.getByRole("tab", { name: "Settings" }));
     const first = screen.getByLabelText("Button 1");
     await user.clear(first);
-    await user.type(first, "20{Enter}");
+    await user.type(first, "25{Enter}");
     expect(screen.getByText("Saved.")).toBeInTheDocument();
-    expect(stored().settings.presets).toEqual([10, 20, 25]);
+    expect(stored().settings.presets).toEqual([20, 25, 30]);
     await user.click(screen.getByRole("tab", { name: "Today" }));
     const names = screen.getAllByRole("button", { name: /^Add \d+ reps$/ }).map((b) => b.textContent);
-    expect(names).toEqual(["+10", "+20", "+25"]);
-    expect(screen.getByText("No sets yet. Tap +10, +20 or +25 after your first set.")).toBeInTheDocument();
+    expect(names).toEqual(["+20", "+25", "+30"]);
+    expect(screen.getByText("No sets yet. Tap +20, +25 or +30 after your first set.")).toBeInTheDocument();
   });
 
   it("rejects a duplicate quick-add button", async () => {
@@ -84,10 +84,10 @@ describe("Settings", () => {
     await user.click(screen.getByRole("tab", { name: "Settings" }));
     const first = screen.getByLabelText("Button 1");
     await user.clear(first);
-    await user.type(first, "10{Enter}");
+    await user.type(first, "20{Enter}");
     expect(screen.getByRole("alert")).toHaveTextContent("Each button needs a different number.");
-    expect(first).toHaveValue(5);
-    expect(stored().settings.presets).toEqual([5, 10, 25]);
+    expect(first).toHaveValue(10);
+    expect(stored().settings.presets).toEqual([10, 20, 30]);
   });
 
   it("rejects an invalid import file with a clear message", async () => {
@@ -117,7 +117,7 @@ describe("Settings", () => {
   it("resets all data after confirmation", async () => {
     const user = userEvent.setup();
     render(<App />);
-    await user.click(screen.getByRole("button", { name: "Add 25 reps" }));
+    await user.click(screen.getByRole("button", { name: "Add 30 reps" }));
     await user.click(screen.getByRole("tab", { name: "Settings" }));
     await user.click(screen.getByRole("button", { name: "Reset" }));
     await user.click(screen.getByRole("button", { name: "Delete everything" }));
@@ -130,10 +130,10 @@ describe("History", () => {
   it("shows today's reps in the table", async () => {
     const user = userEvent.setup();
     render(<App />);
-    await user.click(screen.getByRole("button", { name: "Add 25 reps" }));
+    await user.click(screen.getByRole("button", { name: "Add 30 reps" }));
     await user.click(screen.getByRole("tab", { name: "History" }));
     const row = screen.getByRole("cell", { name: "Today" }).closest("tr")!;
-    expect(within(row).getByText("25")).toBeInTheDocument();
+    expect(within(row).getByText("30")).toBeInTheDocument();
     expect(within(row).getByText("In progress")).toBeInTheDocument();
   });
 

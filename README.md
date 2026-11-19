@@ -6,12 +6,12 @@ It runs entirely in your browser. There is no account, no server and no database
 
 | | Today | History | Settings |
 |---|---|---|---|
-| **Light** | ![Today screen in light mode: 62 of 100 pushups, with +5, +10 and +25 buttons and a list of today's sets](docs/screenshots/today-light.png) | ![History screen in light mode: bar chart of reps per day with the daily target as a dashed line, and a day-by-day table](docs/screenshots/history-light.png) | ![Settings screen in light mode: daily target, timezone and install instructions](docs/screenshots/settings-light.png) |
+| **Light** | ![Today screen in light mode: 62 of 100 pushups, with +10, +20 and +30 buttons and a list of today's sets](docs/screenshots/today-light.png) | ![History screen in light mode: bar chart of reps per day with the daily target as a dashed line, and a day-by-day table](docs/screenshots/history-light.png) | ![Settings screen in light mode: daily target, timezone and install instructions](docs/screenshots/settings-light.png) |
 | **Dark** | ![Today screen in dark mode](docs/screenshots/today-dark.png) | ![History screen in dark mode](docs/screenshots/history-dark.png) | ![Settings screen in dark mode](docs/screenshots/settings-dark.png) |
 
 ## Features
 
-- **Today:** a progress ring shows reps done against the day's target. Log a set in one tap with +5, +10 or +25 (the three amounts are configurable in Settings), or type any amount. Each set is listed with its time and can be deleted, with undo.
+- **Today:** a progress ring shows reps done against the day's target. Log a set in one tap with +10, +20 or +30 (the three amounts are configurable in Settings), or type any amount. Each set is listed with its time and can be deleted, with undo.
 - **History:** a 7 or 30 day chart of reps per day, with each day's target drawn as a dashed line, plus a day-by-day table. A 90 day range appears once you have more than 30 days of history, and a 1 year range (weekly averages) once you have more than 90.
 - **Settings:** change the daily target and timezone, see how to install the app, and export, import or reset your data.
 - **Light and dark mode** follow your device setting.

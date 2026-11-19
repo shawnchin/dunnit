@@ -6,7 +6,7 @@ export type Data = { version: 1; settings: Settings; days: Record<string, Day> }
 export type HistoryRow = { date: string; reps: number; target: number; isToday: boolean; end?: string };
 
 export const DEFAULT_TARGET = 100;
-export const DEFAULT_PRESETS = [5, 10, 25];
+export const DEFAULT_PRESETS = [10, 20, 30];
 
 export function defaultData(timeZone: string): Data {
   return {

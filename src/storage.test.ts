@@ -31,7 +31,7 @@ describe("export and import", () => {
     const { settings, ...rest } = defaultData("UTC");
     const { presets: _presets, ...oldSettings } = settings;
     const result = parseImport(JSON.stringify({ ...rest, settings: oldSettings }));
-    expect(result.ok && result.data.settings.presets).toEqual([5, 10, 25]);
+    expect(result.ok && result.data.settings.presets).toEqual([10, 20, 30]);
   });
 
   it("names the file after today's date", () => {
